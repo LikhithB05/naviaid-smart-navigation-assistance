@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 540" width="1100" height="540" style="background:#ffffff">
+
+  <defs>
+    <style>
+      .title { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .box-title-w { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .txt { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .txt-sm { font: 400 10.5px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+      .arrow-blue { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#ah-blue); }
+      .arrow-red { stroke: #dc2626; stroke-width: 1.8; fill: none; marker-end: url(#ah-red); }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1100" height="540" fill="#ffffff"/>
+  <rect x="0" y="0" width="1100" height="6" fill="url(#navGrad)"/>
+  <text x="32" y="38" class="title">Web Speech API Voice Interaction &amp; 24-Hour Schedule Assistant</text>
+  <text x="32" y="56" class="subtitle">Continuous command listener with TTS anti-feedback locking, 8s mic watchdog, and rule-based command priority</text>
+  <line x1="32" y1="68" x2="1068" y2="68" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="40" y="95" width="300" height="185" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 48 95 H 332 Q 340 95 340 103 V 123 H 40 V 103 Q 40 95 48 95 Z" fill="#0369a1"/>
+  <text x="52" y="114" class="box-title-w">SpeechRecognition Config</text>
+  <text x="52" y="141" class="txt">API: SpeechRecognition / webkitSpeechRecognition</text>
+  <text x="52" y="158" class="txt">lang = 'en-US' | continuous = false</text>
+  <text x="52" y="175" class="txt">interimResults = true | maxAlternatives = 5</text>
+  <text x="52" y="192" class="txt">Interim shortcut: 'cardiology' / 'pharmacy'</text>
+  <text x="52" y="209" class="txt">8s micWatchdog auto-restarts dropped mic</text>
+  <text x="52" y="226" class="txt">Manual fallback: 'Restart Mic' button</text>
+
+  <rect x="380" y="95" width="340" height="185" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <path d="M 388 95 H 712 Q 720 95 720 103 V 123 H 380 V 103 Q 380 95 388 95 Z" fill="#6d28d9"/>
+  <text x="392" y="114" class="box-title-w">Final Transcript Priority Order</text>
+  <text x="392" y="141" class="txt">1. SOS check across ALL 5 alternatives:</text>
+  <text x="392" y="158" class="txt">   help | sos | emergency | elp | assist | danger | urgent</text>
+  <text x="392" y="175" class="txt">2. Location check: 'where am i'</text>
+  <text x="392" y="192" class="txt">3. Specific Time Regex: /(\d{1,2})[:\s](\d{2})/</text>
+  <text x="392" y="209" class="txt">   -&gt; getScheduleAtTime(h, m) (checked before #4)</text>
+  <text x="392" y="226" class="txt">4. Generic 'next'/'schedule' | 'go to &lt;place&gt;'</text>
+
+  <rect x="760" y="95" width="300" height="185" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <path d="M 768 95 H 1052 Q 1060 95 1060 103 V 123 H 760 V 103 Q 760 95 768 95 Z" fill="#047857"/>
+  <text x="772" y="114" class="box-title-w">Mobile-Safe SpeechSynthesis</text>
+  <text x="772" y="141" class="txt">Cancels active utterance + calls stopMic()</text>
+  <text x="772" y="158" class="txt">Speaks at rate = 0.85, lang = 'en-US'</text>
+  <text x="772" y="175" class="txt">10s pause()/resume() keepAlive prevents</text>
+  <text x="772" y="192" class="txt">Chrome Android TTS stall bug</text>
+  <text x="772" y="209" class="txt">onend + failsafe timer (words*120+1200ms)</text>
+  <text x="772" y="226" class="txt">automatically resume SpeechRecognition</text>
+
+  <path d="M 340 185 L 380 185" class="arrow"/>
+  <path d="M 720 185 L 760 185" class="arrow"/>
+
+  <rect x="40" y="320" width="1020" height="180" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <path d="M 48 320 H 1052 Q 1060 320 1060 328 V 348 H 40 V 328 Q 40 320 48 320 Z" fill="#1e293b"/>
+  <text x="52" y="339" class="box-title-w">144-Slot 24-Hour Cyclic Schedule Engine (schedule[] array)</text>
+  <text x="52" y="366" class="txt">Precomputes 144 timestamps (00:00 to 23:50 every 10 minutes) cycling 8 facility destinations:</text>
+  <text x="52" y="383" class="txt">  ['western entrance', 'corridor', 'staircase', 'restroom', 'food court', 'elevator', 'pharmacy', 'cardiology']</text>
+  <text x="52" y="400" class="txt">Voice Query Example: 'Schedule at 12:30' triggers regex match before 'schedule' keyword so HH:MM lookup executes accurately.</text>
+  <text x="52" y="417" class="txt">Distinction: Fixed keyword/regex parser — operates offline inside browser speech callbacks without generative LLM API calls.</text>
+
+</svg>

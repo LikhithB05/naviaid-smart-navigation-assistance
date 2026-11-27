@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Voice Navigator</title>
+  <style>
+    body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+    #status { font-size: 2rem; font-weight: bold; margin: 20px; color: #00ff00; }
+    video { width: 100%; max-width: 600px; border-radius: 15px; border: 2px solid #444; }
+    .display { background: #222; padding: 20px; border-radius: 10px; margin-top: 10px; font-size: 1.2rem; }
+    button { padding: 20px 40px; font-size: 1.5rem; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h2>Crowd Navigator</h2>
+  <button id="startBtn">ACTIVATE GUIDANCE</button>
+  <div id="status">READY</div>
+  
+  <video id="webcam" autoplay playsinline muted></video>
+  
+  <div class="display">
+    <div id="voice-out">Voice output will appear here...</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+  <script>
+    const video = document.getElementById('webcam');
+    const statusDiv = document.getElementById('status');
+    const voiceDiv = document.getElementById('voice-out');
+    const startBtn = document.getElementById('startBtn');
+
+    let model;
+    const CROWD_THRESHOLD = 2; 
+    let lastVoiceCommand = "";
+    let lastTime = 0;
+
+    async function init() {
+      statusDiv.innerText = "LOADING HIGH-SENSITIVITY AI...";
+      // Loading with Mobilenet v2 for better sensitivity balance
+      model = await cocoSsd.load({ base: 'mobilenet_v2' });
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } } 
+      });
+      video.srcObject = stream;
+      
+      video.onloadeddata = () => {
+        statusDiv.innerText = "SENSITIVITY BOOSTED";
+        detect();
+      };
+    }
+
+    function voiceGuide(instruction, priority = false) {
+      const now = Date.now();
+      if (instruction !== lastVoiceCommand || now - lastTime > 4000) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(instruction);
+        msg.rate = 1.2;
+        window.speechSynthesis.speak(msg);
+        
+        if ("vibrate" in navigator) navigator.vibrate(priority ? [400, 100, 400] : 200);
+        
+        lastVoiceCommand = instruction;
+        lastTime = now;
+        voiceDiv.innerText = instruction.toUpperCase();
+      }
+    }
+
+    async function detect() {
+      if (video.readyState !== 4) {
+        requestAnimationFrame(detect);
+        return;
+      }
+
+      // Detection with 0.3 (30%) confidence to "see" more people
+      const predictions = await model.detect(video, 50, 0.3);
+      let zones = { left: 0, center: 0, right: 0 };
+      const w = video.videoWidth;
+
+      predictions.forEach(p => {
+        if (p.class === "person") {
+          const centerX = p.bbox[0] + (p.bbox[2] / 2);
+          // Filter out tiny "ghost" detections
+          if (p.bbox[2] > 20) {
+            if (centerX < w / 3) zones.left++;
+            else if (centerX > (w * 2) / 3) zones.right++;
+            else zones.center++;
+          }
+        }
+      });
+
+      const totalPeople = zones.left + zones.center + zones.right;
+
+      // UPDATED GUIDANCE LOGIC
+      if (zones.center >= CROWD_THRESHOLD) {
+        statusDiv.style.color = "red";
+        if (zones.left < zones.right) {
+          voiceGuide("Crowd ahead. Clearer on the left.", true);
+        } else {
+          voiceGuide("Crowd ahead. Clearer on the right.", true);
+        }
+      } 
+      else if (totalPeople >= CROWD_THRESHOLD) {
+        statusDiv.style.color = "yellow";
+        voiceGuide("Approaching a crowd. Walk slowly.");
+      } 
+      else if (totalPeople === 1) {
+        statusDiv.style.color = "white";
+        voiceGuide("One person ahead.");
+      } 
+      else {
+        statusDiv.style.color = "#00ff00";
+        voiceGuide("Path clear.");
+      }
+
+      requestAnimationFrame(detect);
+    }
+
+    startBtn.onclick = () => {
+      startBtn.style.display = 'none';
+      init();
+    };
+  </script>
+</body>
+</html>

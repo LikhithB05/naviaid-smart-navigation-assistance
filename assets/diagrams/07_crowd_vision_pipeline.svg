@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 470" width="1080" height="470" style="background:#ffffff">
+
+  <defs>
+    <style>
+      .title { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .box-title-w { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .txt { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .txt-sm { font: 400 10.5px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+      .arrow-blue { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#ah-blue); }
+      .arrow-red { stroke: #dc2626; stroke-width: 1.8; fill: none; marker-end: url(#ah-red); }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1080" height="470" fill="#ffffff"/>
+  <rect x="0" y="0" width="1080" height="6" fill="url(#navGrad)"/>
+  <text x="32" y="38" class="title">Companion Module: Real-Time Crowd &amp; Obstacle Avoidance Pipeline (crowd-navigator.html)</text>
+  <text x="32" y="56" class="subtitle">Client-side TensorFlow.js COCO-SSD inference partitioning camera detections into 3 spatial guidance zones</text>
+  <line x1="32" y1="68" x2="1048" y2="68" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="40" y="95" width="220" height="175" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 48 95 H 252 Q 260 95 260 103 V 123 H 40 V 103 Q 40 95 48 95 Z" fill="#0369a1"/>
+  <text x="52" y="114" class="box-title-w">1. Video Capture</text>
+  <text x="52" y="141" class="txt">Webcam rear stream</text>
+  <text x="52" y="158" class="txt">(ideal 640x480)</text>
+  <text x="52" y="175" class="txt">Triggered via</text>
+  <text x="52" y="192" class="txt">'ACTIVATE GUIDANCE'</text>
+  <text x="52" y="209" class="txt">on requestAnimationFrame</text>
+
+  <rect x="295" y="95" width="250" height="175" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <path d="M 303 95 H 537 Q 545 95 545 103 V 123 H 295 V 103 Q 295 95 303 95 Z" fill="#6d28d9"/>
+  <text x="307" y="114" class="box-title-w">2. COCO-SSD Inference</text>
+  <text x="307" y="141" class="txt">TF.js + cocoSsd.load</text>
+  <text x="307" y="158" class="txt">base: 'mobilenet_v2'</text>
+  <text x="307" y="175" class="txt">model.detect(video, 50, 0.3)</text>
+  <text x="307" y="192" class="txt">Filter: class === 'person'</text>
+  <text x="307" y="209" class="txt">and bbox width &gt; 20 px</text>
+
+  <rect x="580" y="95" width="220" height="175" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <path d="M 588 95 H 792 Q 800 95 800 103 V 123 H 580 V 103 Q 580 95 588 95 Z" fill="#c2410c"/>
+  <text x="592" y="114" class="box-title-w">3. 3-Zone Partition</text>
+  <text x="592" y="141" class="txt">centerX = x + w/2</text>
+  <text x="592" y="158" class="txt">Left: &lt; width / 3</text>
+  <text x="592" y="175" class="txt">Center: middle third</text>
+  <text x="592" y="192" class="txt">Right: &gt; 2*width / 3</text>
+  <text x="592" y="209" class="txt">CROWD_THRESHOLD = 2</text>
+
+  <rect x="835" y="95" width="205" height="175" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <path d="M 843 95 H 1032 Q 1040 95 1040 103 V 123 H 835 V 103 Q 835 95 843 95 Z" fill="#047857"/>
+  <text x="847" y="114" class="box-title-w">4. Audio + Haptics</text>
+  <text x="847" y="141" class="txt">center &gt;= 2: Left/Right</text>
+  <text x="847" y="158" class="txt">  evade + vibrate [400,100,400]</text>
+  <text x="847" y="175" class="txt">total &gt;= 2: 'Walk slowly'</text>
+  <text x="847" y="192" class="txt">total == 1: 'One person'</text>
+  <text x="847" y="209" class="txt">total == 0: 'Path clear'</text>
+
+  <path d="M 260 182 L 295 182" class="arrow"/>
+  <path d="M 545 182 L 580 182" class="arrow"/>
+  <path d="M 800 182 L 835 182" class="arrow"/>
+
+  <rect x="40" y="305" width="1000" height="130" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <path d="M 48 305 H 1032 Q 1040 305 1040 313 V 333 H 40 V 313 Q 40 305 48 305 Z" fill="#1e293b"/>
+  <text x="52" y="324" class="box-title-w">Speech Rate-Limiting &amp; Integration Status</text>
+  <text x="52" y="351" class="txt">Voice Throttling: Speaks only when instruction text changes OR &gt; 4,000 ms elapsed since last utterance (rate = 1.2).</text>
+  <text x="52" y="368" class="txt">Integration Status: Standalone companion prototype (`index_crowd_final.html` -&gt; `crowd-navigator.html`), operating independently from QR routing (`index.html`).</text>
+
+</svg>

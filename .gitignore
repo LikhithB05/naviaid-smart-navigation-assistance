@@ -1,0 +1,12 @@
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Local environment / backups
+.env
+.env.*
+!.env.example
+node_modules/

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 580" width="1100" height="580" style="background:#ffffff">
+
+  <defs>
+    <style>
+      .title { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .box-title-w { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .txt { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .txt-sm { font: 400 10.5px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+      .arrow-blue { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#ah-blue); }
+      .arrow-red { stroke: #dc2626; stroke-width: 1.8; fill: none; marker-end: url(#ah-red); }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1100" height="580" fill="#ffffff"/>
+  <rect x="0" y="0" width="1100" height="6" fill="url(#navGrad)"/>
+  <text x="32" y="38" class="title">QR Checkpoint Recognition, Step Verification &amp; Dynamic Recalculation Workflow</text>
+  <text x="32" y="56" class="subtitle">How handleQR(data) distinguishes expected progress, skipped on-route markers, and off-route wrong turns</text>
+  <line x1="32" y1="68" x2="1068" y2="68" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="40" y="95" width="240" height="135" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 48 95 H 272 Q 280 95 280 103 V 123 H 40 V 103 Q 40 95 48 95 Z" fill="#0369a1"/>
+  <text x="52" y="114" class="box-title-w">1. Continuous Scan Loop</text>
+  <text x="52" y="141" class="txt">scanQR() draws video frame</text>
+  <text x="52" y="158" class="txt">to hidden canvas every animation</text>
+  <text x="52" y="175" class="txt">frame -&gt; jsQR(imageData)</text>
+  <text x="52" y="192" class="txt">Pauses 2,500 ms after decode</text>
+  <text x="52" y="209" class="txt">Ignores unknown strings silently</text>
+
+  <rect x="320" y="95" width="250" height="135" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="1.5"/>
+  <path d="M 328 95 H 562 Q 570 95 570 103 V 123 H 320 V 103 Q 320 95 328 95 Z" fill="#334155"/>
+  <text x="332" y="114" class="box-title-w">2. Location State Update</text>
+  <text x="332" y="141" class="txt">scanned = data.trim().toLowerCase()</text>
+  <text x="332" y="158" class="txt">Match against 6 validCheckpoints</text>
+  <text x="332" y="175" class="txt">Update currentLocation &amp; lastKnownLocation</text>
+  <text x="332" y="192" class="txt">If destination == null:</text>
+  <text x="332" y="209" class="txt">  Entrance -&gt; open destination prompt</text>
+
+  <path d="M 280 162 L 320 162" class="arrow"/>
+  <path d="M 445 230 L 185 280" class="arrow"/>
+  <path d="M 445 230 L 545 280" class="arrow-blue"/>
+  <path d="M 445 230 L 905 280" class="arrow-red"/>
+
+  <rect x="40" y="282" width="300" height="165" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <path d="M 48 282 H 332 Q 340 282 340 290 V 310 H 40 V 290 Q 40 282 48 282 Z" fill="#047857"/>
+  <text x="52" y="301" class="box-title-w">Case A: Expected Next Marker</text>
+  <text x="52" y="328" class="txt">matchedCheckpoint === currentRoute[currentStep]</text>
+  <text x="52" y="345" class="txt">Vibrate [300] ms | currentStep++</text>
+  <text x="52" y="362" class="txt">Redraw Canvas 2D nodes (green = current)</text>
+  <text x="52" y="379" class="txt">Speak directions[prev + '-' + next]</text>
+  <text x="52" y="396" class="txt">If end of route: vibrate [400,200,400],</text>
+  <text x="52" y="413" class="txt">mark navigationComplete = true</text>
+
+  <rect x="380" y="282" width="330" height="165" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <path d="M 388 282 H 702 Q 710 282 710 290 V 310 H 380 V 290 Q 380 282 388 282 Z" fill="#1d4ed8"/>
+  <text x="392" y="301" class="box-title-w">Case B: On-Route Skipped Marker</text>
+  <text x="392" y="328" class="txt">matched != expected, BUT indexOf() != -1</text>
+  <text x="392" y="345" class="txt">Example: Skipped reception &amp; scanned junction</text>
+  <text x="392" y="362" class="txt">Action: Snaps currentStep = indexInRoute + 1</text>
+  <text x="392" y="379" class="txt">Redraws map to new step position</text>
+  <text x="392" y="396" class="txt">Speaks: 'Recalculating. ' +</text>
+  <text x="392" y="413" class="txt">  directions[matched + '-' + next]</text>
+
+  <rect x="750" y="282" width="320" height="165" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <path d="M 758 282 H 1062 Q 1070 282 1070 290 V 310 H 750 V 290 Q 750 282 758 282 Z" fill="#b91c1c"/>
+  <text x="762" y="301" class="box-title-w">Case C: Off-Route Wrong Marker</text>
+  <text x="762" y="328" class="txt">indexOf(matched) === -1 (e.g. at Pharmacy</text>
+  <text x="762" y="345" class="txt">  while heading to Cardiology)</text>
+  <text x="762" y="362" class="txt">Lookup direct key matched + '-' + expectedNext</text>
+  <text x="762" y="379" class="txt">Fallback if absent: 2-leg recovery via junction</text>
+  <text x="762" y="396" class="txt">  directions[matched+'-junction'] + ' Then ' +</text>
+  <text x="762" y="413" class="txt">  directions['junction-'+expectedNext]</text>
+
+  <rect x="40" y="475" width="1030" height="80" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="52" y="497" class="box-title">Navigation State Safeguards</text>
+  <text x="52" y="517" class="txt">UI shows 'Wrong way. ...' &amp; speaks 'Wrong checkpoint. ...' while keeping destination unchanged until user scans an on-route marker or says 'go to &lt;place&gt;'.</text>
+
+</svg>

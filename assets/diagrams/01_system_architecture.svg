@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620" style="background:#ffffff">
+
+  <defs>
+    <style>
+      .title { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .box-title-w { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .txt { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .txt-sm { font: 400 10.5px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+      .arrow-blue { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#ah-blue); }
+      .arrow-red { stroke: #dc2626; stroke-width: 1.8; fill: none; marker-end: url(#ah-red); }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="620" fill="#ffffff"/>
+  <rect x="0" y="0" width="1120" height="6" fill="url(#navGrad)"/>
+  <text x="32" y="38" class="title">NaviAid — Client-Side Assistive Indoor Navigation &amp; Safety Architecture</text>
+  <text x="32" y="56" class="subtitle">Pure browser-native SPA modules (index.html core + crowd-navigator.html TF.js companion) with Web APIs &amp; PeerJS P2P streaming</text>
+  <line x1="32" y1="68" x2="1088" y2="68" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="40" y="95" width="670" height="210" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 48 95 H 702 Q 710 95 710 103 V 123 H 40 V 103 Q 40 95 48 95 Z" fill="#0369a1"/>
+  <text x="52" y="114" class="box-title-w">Primary Application — index.html (NavAid Indoor Navigation)</text>
+  <text x="52" y="141" class="txt">QR Navigation Engine: Camera getUserMedia + jsQR (2.5s cooldown) -&gt; 6-node Spine-and-Branch router</text>
+  <text x="52" y="158" class="txt">Wrong-Checkpoint Recovery: On-route step snap + off-route viaJunction 2-leg fallback + Canvas 2D map</text>
+  <text x="52" y="175" class="txt">Voice &amp; Schedule Subsystem: SpeechRecognition (5 alts, 8s watchdog) + SpeechSynthesis (10s keepAlive) + 144 slots</text>
+  <text x="52" y="192" class="txt">Fall &amp; SOS Triggers: DeviceMotion (delta &gt; 25 m/s^2, 10s cooldown), Volume 2s hold, 3-finger touch, voice SOS</text>
+  <text x="52" y="209" class="txt">Emergency Dispatch: Geolocation snapshot -&gt; Google Maps URL + WhatsApp wa.me click-to-chat + PeerJS ?watch= link</text>
+
+  <rect x="740" y="95" width="340" height="210" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <path d="M 748 95 H 1072 Q 1080 95 1080 103 V 123 H 740 V 103 Q 740 95 748 95 Z" fill="#6d28d9"/>
+  <text x="752" y="114" class="box-title-w">Companion Module — crowd-navigator.html</text>
+  <text x="752" y="141" class="txt">Standalone Computer Vision Obstacle Assistant</text>
+  <text x="752" y="158" class="txt">Loads TensorFlow.js + COCO-SSD (mobilenet_v2)</text>
+  <text x="752" y="175" class="txt">Filters 'person' detections (score &gt;= 0.30, w &gt; 20px)</text>
+  <text x="752" y="192" class="txt">3-Zone Spatial Counter: Left | Center | Right</text>
+  <text x="752" y="209" class="txt">Audio + Haptic Alert when center &gt;= 2 people</text>
+
+  <path d="M 375 305 L 200 365" class="arrow-blue"/>
+  <path d="M 375 305 L 550 365" class="arrow-blue"/>
+  <path d="M 540 305 L 910 365" class="arrow-red"/>
+
+  <rect x="40" y="368" width="320" height="205" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <path d="M 48 368 H 352 Q 360 368 360 376 V 396 H 40 V 376 Q 40 368 48 368 Z" fill="#047857"/>
+  <text x="52" y="387" class="box-title-w">Device Hardware &amp; Browser APIs</text>
+  <text x="52" y="414" class="txt">Camera (rear facingMode: 'environment')</text>
+  <text x="52" y="431" class="txt">Microphone (Web Speech API + PeerJS audio)</text>
+  <text x="52" y="448" class="txt">DeviceMotionEvent accelerometer (iOS gated)</text>
+  <text x="52" y="465" class="txt">Navigator Geolocation (single GPS snapshot)</text>
+  <text x="52" y="482" class="txt">Navigator Vibrate (haptic cues &amp; SOS pulses)</text>
+  <text x="52" y="499" class="txt">localStorage (configurable guardian number)</text>
+
+  <rect x="395" y="368" width="320" height="205" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="1.5"/>
+  <path d="M 403 368 H 707 Q 715 368 715 376 V 396 H 395 V 376 Q 395 368 403 368 Z" fill="#334155"/>
+  <text x="407" y="387" class="box-title-w">Physical Checkpoints &amp; Client Assets</text>
+  <text x="407" y="414" class="txt">6 QR Marker JPEGs (qr-checkpoints/*.jpeg):</text>
+  <text x="407" y="431" class="txt">  Entrance -&gt; Reception -&gt; Corridor A -&gt; Junction</text>
+  <text x="407" y="448" class="txt">  Branches: Cardiology | Pharmacy</text>
+  <text x="407" y="465" class="txt">17 pre-authored step-count instruction strings</text>
+  <text x="407" y="482" class="txt">CDNs: jsQR, PeerJS 1.4.7, TF.js + COCO-SSD</text>
+
+  <rect x="750" y="368" width="330" height="205" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <path d="M 758 368 H 1072 Q 1080 368 1080 376 V 396 H 750 V 376 Q 750 368 758 368 Z" fill="#b91c1c"/>
+  <text x="762" y="387" class="box-title-w">External Communication Channels</text>
+  <text x="762" y="414" class="txt">PeerJS Signaling + WebRTC DTLS P2P Media:</text>
+  <text x="762" y="431" class="txt">  Broadcasts camera+mic to ?watch=navaid-* viewer</text>
+  <text x="762" y="448" class="txt">WhatsApp Click-to-Chat (https://wa.me/?text=...):</text>
+  <text x="762" y="465" class="txt">  Prefills checkpoint, time, GPS Maps &amp; watch URL</text>
+  <text x="762" y="482" class="txt">  (Requires user tap Send inside WhatsApp)</text>
+
+</svg>

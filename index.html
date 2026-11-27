@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NavAid Indoor Navigation</title>
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+<style>
+body{font-family:Arial;background:#0b1220;color:white;text-align:center;padding:20px;margin:0;}
+button{padding:12px 18px;margin:8px;font-size:16px;background:#00e5ff;border:none;border-radius:8px;cursor:pointer;color:#000;}
+video{width:100%;max-width:320px;border-radius:10px;margin-top:10px;display:block;margin-left:auto;margin-right:auto;}
+canvas{margin-top:20px;background:#111;border-radius:10px;}
+#destination{display:none;}
+#navigation{display:none;}
+#guardianPanel{display:none;margin-top:16px;background:#0d1f0d;border:2px solid #00e5ff;border-radius:12px;padding:16px;}
+#guardianPanel h3{margin:0 0 10px;color:#00e5ff;font-size:16px;}
+#guardianVideo{width:100%;max-width:320px;border-radius:8px;background:#000;display:block;margin:auto;}
+#guardianStatus{font-size:13px;color:#aaa;margin-top:8px;}
+#sessionInfo{background:#0a2a0a;border:1px solid #00e5ff;border-radius:8px;padding:10px;margin-top:10px;font-size:13px;display:none;}
+#sessionInfo b{color:#00e5ff;}
+#sosOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(200,0,0,0.92);z-index:999;justify-content:center;align-items:center;flex-direction:column;padding:20px;box-sizing:border-box;}
+#sosOverlay h2{font-size:26px;margin:0 0 10px;}
+#sosOverlay p{font-size:14px;margin:4px 0;text-align:center;}
+#sosOverlay button{margin-top:20px;background:#fff;color:#c00;font-weight:bold;font-size:16px;padding:12px 24px;border-radius:8px;border:none;}
+#fallAlert{display:none;position:fixed;top:20px;left:10px;right:10px;background:#ff6600;color:white;padding:12px 20px;border-radius:10px;z-index:998;font-size:14px;font-weight:bold;text-align:center;}
+#voiceStatus{font-size:13px;color:#00e5ff;margin-top:10px;min-height:18px;}
+#micBar{height:4px;background:#00e5ff;width:0%;border-radius:2px;margin:4px auto;max-width:200px;transition:width 0.2s;}
+</style>
+</head>
+<body>
+
+<h1 style="font-size:22px;">NavAid Indoor Navigation</h1>
+<button onclick="startApp()">Start Navigation</button>
+<button onclick="askSchedule()">Next Destination</button>
+<br><br>
+
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas" hidden></canvas>
+
+<div id="destination">
+<h3>Select Destination</h3>
+<button onclick="selectDest('cardiology')">Cardiology</button>
+<button onclick="selectDest('pharmacy')">Pharmacy</button>
+</div>
+
+<div id="navigation">
+<h3 id="instruction" style="font-size:16px;padding:0 10px;"></h3>
+<canvas id="mapCanvas" width="300" height="240"></canvas>
+</div>
+
+<p id="nextPlace" style="font-size:14px;padding:0 10px;"></p>
+<div id="voiceStatus">Tap Start Navigation</div>
+<div id="micBar"></div>
+<button onclick="restartMic()" style="background:#1a2a3a;font-size:13px;padding:8px 14px;color:white;">Restart Mic</button>
+<div style="margin:12px auto;max-width:340px;padding:10px;background:#111c30;border:1px solid #1e3a5f;border-radius:8px;font-size:12px;">
+  <label for="guardianPhoneInput" style="color:#aef;display:block;margin-bottom:6px;">Guardian WhatsApp Number (stored locally):</label>
+  <input id="guardianPhoneInput" type="tel" placeholder="e.g. 15550100000" style="padding:6px 8px;border-radius:6px;border:1px solid #335;background:#0b1220;color:#fff;width:180px;">
+  <button onclick="saveGuardianNumber()" style="padding:6px 10px;font-size:12px;margin:0 0 0 6px;">Save</button>
+  <div id="guardianConfigStatus" style="color:#8fa;margin-top:4px;"></div>
+</div>
+
+<!-- SOS OVERLAY -->
+<div id="sosOverlay">
+<h2>🆘 SOS ACTIVATED</h2>
+<p id="sosLocation">Last checkpoint: getting info...</p>
+<p id="sosTime"></p>
+<p id="sosSessionInfo" style="color:#ffff88;margin-top:8px;font-size:13px;"></p>
+<p id="sosShareStatus" role="status">Choose how to share this alert. WhatsApp requires you to press Send.</p>
+<button onclick="shareSOSMedia()">Start live camera and microphone</button>
+<button onclick="prepareSOSMessage()">Open WhatsApp draft</button>
+<button onclick="dismissSOS()">Cancel SOS</button>
+</div>
+
+<!-- FALL ALERT BANNER -->
+<div id="fallAlert">⚠️ Possible fall detected.</div>
+
+<!-- GUARDIAN PANEL -->
+<div id="guardianPanel">
+<h3>👁 Guardian Assist — Live View</h3>
+<video id="guardianVideo" autoplay playsinline muted></video>
+<div id="sessionInfo">
+<b>Guardian Watch Link:</b><br>
+<span id="sessionLink" style="word-break:break-all;font-size:12px;color:#aef;"></span><br>
+<small style="color:#888;">Share this link with guardian to let them watch live</small>
+</div>
+<p id="guardianStatus">Starting camera...</p>
+<button onclick="stopGuardian()" style="background:#c0392b;font-size:13px;padding:8px 14px;margin-top:8px;color:white;">Stop Guardian Mode</button>
+</div>
+
+<script>
+
+// ── CONFIG — SET YOUR GUARDIAN NUMBER HERE ──
+// Configurable guardian WhatsApp contact (stored locally in browser, never hardcoded in public repo)
+let GUARDIAN_NUMBER = localStorage.getItem("navaid_guardian_number") || ""
+function saveGuardianNumber(){
+  const val = (document.getElementById("guardianPhoneInput")?.value || "").replace(/[^\d]/g, "")
+  if(!val){ alert("Enter a valid numeric phone number with country code (digits only)."); return }
+  GUARDIAN_NUMBER = val
+  localStorage.setItem("navaid_guardian_number", val)
+  const st = document.getElementById("guardianConfigStatus")
+  if(st) st.innerText = "Guardian contact saved locally in browser."
+}
+
+// ── STATE ──
+let video=document.getElementById("video")
+let canvas=document.getElementById("canvas")
+let ctx=canvas.getContext("2d")
+let recognition=null
+let recognitionRunning=false
+let micWatchdog=null
+let destination=null
+let currentRoute=[]
+let currentStep=0
+let scanning=true
+let navigationComplete=false
+let currentLocation="entrance"
+let lastKnownLocation="entrance"
+let peer=null
+let guardianStream=null
+let guardianActive=false
+let guardianAttempt=0
+let sosActive=false
+let sosAttempt=0
+let sessionId=null
+
+// ── DATA ──
+const routes={
+  cardiology:["entrance","reception","corridor a","junction","cardiology"],
+  pharmacy:["entrance","reception","corridor a","junction","pharmacy"]
+}
+const validCheckpoints=["entrance","reception","corridor a","junction","cardiology","pharmacy"]
+const directions={
+  "entrance-reception":"Walk forward ten steps to reception",
+  "reception-corridor a":"Turn right and walk six steps to corridor A",
+  "corridor a-junction":"Walk forward eight steps to the junction",
+  "junction-cardiology":"Turn left and walk five steps. Cardiology is on your left",
+  "junction-pharmacy":"Turn right and walk five steps. Pharmacy is on your right",
+  "cardiology-junction":"Walk five steps back to the junction",
+  "pharmacy-junction":"Walk five steps back to the junction",
+  "junction-corridor a":"Walk eight steps back to corridor A",
+  "corridor a-reception":"Walk six steps back to reception",
+  "reception-entrance":"Walk back ten steps to the entrance",
+  "junction-reception":"Walk back through corridor A then six steps to reception",
+  "pharmacy-corridor a":"Walk five steps to junction then eight steps to corridor A",
+  "cardiology-corridor a":"Walk five steps to junction then eight steps to corridor A",
+  "pharmacy-reception":"Walk five steps to junction then eight steps through corridor A then six steps to reception",
+  "cardiology-reception":"Walk five steps to junction then eight steps through corridor A then six steps to reception",
+  "pharmacy-entrance":"Walk back to junction then corridor A then reception then to entrance",
+  "cardiology-entrance":"Walk back to junction then corridor A then reception then to entrance"
+}
+const locations={
+  "entrance":{x:25,y:215},
+  "reception":{x:80,y:195},
+  "corridor a":{x:140,y:155},
+  "junction":{x:200,y:110},
+  "cardiology":{x:275,y:65},
+  "pharmacy":{x:275,y:185}
+}
+const schedule=[]
+const places=["western entrance","corridor","staircase","restroom","food court","elevator","pharmacy","cardiology"]
+let sidx=0
+for(let h=0;h<24;h++){
+  for(let m=0;m<60;m+=10){
+    schedule.push({time:String(h).padStart(2,"0")+":"+String(m).padStart(2,"0"),place:places[sidx%places.length]})
+    sidx++
+  }
+}
+
+// ── SPEECH — mobile-safe ──
+let speakRestartTimer=null
+
+function speak(text){
+  if(speakRestartTimer){ clearTimeout(speakRestartTimer); speakRestartTimer=null }
+  speechSynthesis.cancel()
+  stopMic()
+  setVoiceStatus("speaking")
+
+  let s=new SpeechSynthesisUtterance(text)
+  s.lang="en-US"
+  s.rate=0.85
+  s.volume=1
+
+  let wordCount=text.split(" ").length
+  let estimatedMs=(wordCount*120)+1200
+
+  s.onend=function(){
+    if(speakRestartTimer){ clearTimeout(speakRestartTimer); speakRestartTimer=null }
+    startMic()
+  }
+
+  speakRestartTimer=setTimeout(function(){
+    speakRestartTimer=null
+    startMic()
+  }, estimatedMs)
+
+  speechSynthesis.speak(s)
+
+  clearInterval(window._synthKeepAlive)
+  window._synthKeepAlive=setInterval(function(){
+    if(!speechSynthesis.speaking){ clearInterval(window._synthKeepAlive) }
+    else{ speechSynthesis.pause(); speechSynthesis.resume() }
+  },10000)
+}
+
+function setVoiceStatus(state){
+  let el=document.getElementById("voiceStatus")
+  let bar=document.getElementById("micBar")
+  if(!el) return
+  if(state==="listening"){ el.innerText="🎤 Listening..."; bar.style.width="60%" }
+  else if(state==="speaking"){ el.innerText="🔊 Speaking..."; bar.style.width="100%" }
+  else if(state==="error"){ el.innerText="⚠️ Mic error — tap Restart Mic"; bar.style.width="0%" }
+  else{ el.innerText=state; bar.style.width="30%" }
+}
+
+// ── MIC CONTROL ──
+function stopMic(){
+  recognitionRunning=false
+  if(micWatchdog){ clearInterval(micWatchdog); micWatchdog=null }
+  if(recognition){ try{ recognition.stop() }catch(e){} }
+}
+
+function startMic(){
+  if(recognitionRunning) return
+  if(speechSynthesis.speaking) return
+  recognitionRunning=true
+  try{ recognition.start() }catch(e){ recognitionRunning=false }
+  if(micWatchdog){ clearInterval(micWatchdog) }
+  micWatchdog=setInterval(function(){
+    if(!recognitionRunning && !speechSynthesis.speaking){
+      try{ recognition.start(); recognitionRunning=true }catch(e){}
+    }
+  },8000)
+}
+
+function restartMic(){
+  stopMic()
+  setTimeout(function(){ startMic() },500)
+}
+
+// ── START APP ──
+async function startApp(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false})
+    video.srcObject=stream
+    scanQR()
+    startFallDetection()
+    setupVoice()
+    setTimeout(function(){
+      speak("Camera ready. Please scan the entrance Q R marker.")
+    },300)
+  }catch(err){
+    setVoiceStatus("Camera error: "+err.message)
+  }
+}
+
+// ── VOICE SETUP ──
+function setupVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition
+  if(!SR){ setVoiceStatus("Voice not supported on this browser"); return }
+
+  recognition=new SR()
+  recognition.lang="en-US"
+  recognition.continuous=false
+  recognition.interimResults=true
+  recognition.maxAlternatives=5
+
+  recognition.onstart=function(){
+    recognitionRunning=true
+    setVoiceStatus("listening")
+  }
+
+  recognition.onend=function(){
+    recognitionRunning=false
+    if(!speechSynthesis.speaking){
+      setTimeout(function(){ startMic() },300)
+    }
+  }
+
+  recognition.onerror=function(e){
+    recognitionRunning=false
+    if(e.error==="aborted") return
+    setVoiceStatus("error")
+    if(e.error==="no-speech"||e.error==="network"||e.error==="audio-capture"){
+      setTimeout(function(){ startMic() },1500)
+    }
+  }
+
+  recognition.onresult=function(e){
+    let lastResult=e.results[e.results.length-1]
+    let isFinal=lastResult.isFinal
+
+    let allTranscripts=[]
+    for(let i=0;i<lastResult.length;i++){
+      allTranscripts.push(lastResult[i].transcript.toLowerCase().trim())
+    }
+    let command=allTranscripts[0]
+
+    // INTERIM — fast destination select only
+    if(!isFinal){
+      if(!navigationComplete && destination==null){
+        if(command.includes("cardiology")){ selectDest("cardiology"); return }
+        if(command.includes("pharmacy")){ selectDest("pharmacy"); return }
+      }
+      document.getElementById("voiceStatus").innerText="Hearing: "+command
+      return
+    }
+
+    // FINAL
+    setVoiceStatus("Heard: "+command)
+
+    // SOS — check ALL alternatives
+    let sosTriggered=allTranscripts.some(function(t){
+      return t.includes("help")||t.includes("sos")||t.includes("emergency")||
+             t.includes("elp")||t.includes("assist")||t.includes("danger")||t.includes("urgent")
+    })
+    if(sosTriggered){ triggerSOS(); return }
+
+    if(command.includes("where am i")){ speak("You are at "+currentLocation); return }
+
+    // ── BUG FIX 1: Check for a specific time BEFORE checking for generic "schedule"/"next" ──
+    // This prevents "schedule at 12:30" from being caught by the generic schedule branch
+    let timeMatch=command.match(/(\d{1,2})[:\s](\d{2})/)
+    if(timeMatch){ getScheduleAtTime(parseInt(timeMatch[1]),parseInt(timeMatch[2])); return }
+
+    // Only reach here if NO time was found — now check for generic next/schedule
+    if(command.includes("next")||command.includes("schedule")){
+      askSchedule(); return
+    }
+
+    if(command.includes("go to")||command.includes("goto")||
+       command.includes("navigate to")||command.includes("take me to")){
+      if(command.includes("cardiology")){ startNewNavigation("cardiology") }
+      else if(command.includes("pharmacy")){ startNewNavigation("pharmacy") }
+      else if(command.includes("entrance")){ startNewNavigation("entrance") }
+      else if(command.includes("junction")){ startNewNavigation("junction") }
+      else if(command.includes("reception")){ startNewNavigation("reception") }
+      else if(command.includes("corridor")){ startNewNavigation("corridor a") }
+      else{ speak("Destination not recognised. Try saying go to pharmacy or go to cardiology.") }
+      return
+    }
+
+    // Fallback destination select
+    if(!navigationComplete && destination==null){
+      if(command.includes("cardiology")){ selectDest("cardiology") }
+      else if(command.includes("pharmacy")){ selectDest("pharmacy") }
+    }
+  }
+
+  startMic()
+}
+
+// ── QR SCAN ──
+function scanQR(){
+  function tick(){
+    if(!scanning){ requestAnimationFrame(tick); return }
+    if(video.readyState===video.HAVE_ENOUGH_DATA){
+      canvas.width=video.videoWidth
+      canvas.height=video.videoHeight
+      ctx.drawImage(video,0,0)
+      let imageData=ctx.getImageData(0,0,canvas.width,canvas.height)
+      let code=jsQR(imageData.data,imageData.width,imageData.height)
+      if(code){
+        scanning=false
+        handleQR(code.data)
+        setTimeout(function(){ scanning=true },2500)
+      }
+    }
+    requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
+// ── HANDLE QR ──
+function handleQR(data){
+  if(navigationComplete) return
+  let scanned=data.trim().toLowerCase()
+
+  let matchedCheckpoint=validCheckpoints.find(function(cp){ return scanned.includes(cp) })
+  if(!matchedCheckpoint) return
+
+  currentLocation=matchedCheckpoint
+  lastKnownLocation=matchedCheckpoint
+
+  if(destination==null){
+    if(matchedCheckpoint==="entrance"){
+      speak("Entrance detected. Please say your destination.")
+      document.getElementById("destination").style.display="block"
+    }else{
+      speak("Please scan the entrance marker to begin.")
+    }
+    return
+  }
+
+  let expectedCheckpoint=currentRoute[currentStep]
+
+  if(matchedCheckpoint===expectedCheckpoint){
+    navigator.vibrate&&navigator.vibrate([300])
+    currentStep++
+    updateMap()
+    if(currentStep<currentRoute.length){
+      let prev=currentRoute[currentStep-1]
+      let next=currentRoute[currentStep]
+      let instruction=directions[prev+"-"+next]||("Proceed to "+next)
+      document.getElementById("instruction").innerText=instruction
+      speak(instruction)
+    }else{
+      document.getElementById("instruction").innerText="You have reached your destination"
+      navigator.vibrate&&navigator.vibrate([400,200,400])
+      navigationComplete=true
+      scanning=false
+      speak("Congratulations. You have reached "+destination+". Navigation complete. Say go to followed by your next destination.")
+    }
+  }else{
+    let indexInRoute=currentRoute.indexOf(matchedCheckpoint)
+    if(indexInRoute!==-1){
+      currentStep=indexInRoute+1
+      updateMap()
+      if(currentStep<currentRoute.length){
+        let next=currentRoute[currentStep]
+        let instruction=directions[matchedCheckpoint+"-"+next]||("Proceed to "+next)
+        document.getElementById("instruction").innerText=instruction
+        speak("Recalculating. "+instruction)
+      }else{
+        navigationComplete=true; scanning=false
+        speak("You have reached your destination.")
+      }
+    }else{
+      let expectedNext=currentRoute[currentStep]
+      let key=matchedCheckpoint+"-"+expectedNext
+      let instruction=directions[key]
+
+      if(!instruction){
+        let viaJunction=directions[matchedCheckpoint+"-junction"]
+        let toNext=directions["junction-"+expectedNext]
+        if(viaJunction && toNext){
+          instruction=viaJunction+" Then "+toNext
+        }else{
+          instruction="Head towards "+expectedNext
+        }
+      }
+
+      document.getElementById("instruction").innerText="Wrong way. "+instruction
+      speak("Wrong checkpoint. "+instruction)
+    }
+  }
+}
+
+// ── SELECT DESTINATION ──
+function selectDest(dest){
+  destination=dest
+  currentRoute=routes[dest]
+  currentStep=1
+  document.getElementById("destination").style.display="none"
+  document.getElementById("navigation").style.display="block"
+  drawMap()
+  speak("Navigation started. Move forward and scan the reception marker.")
+}
+
+// ── NEW NAVIGATION ──
+function startNewNavigation(dest){
+  if(currentLocation===dest){ speak("You are already at "+dest); return }
+  navigationComplete=false
+  scanning=true
+  destination=dest
+
+  const masterLine=["entrance","reception","corridor a","junction"]
+  const branches={"cardiology":"junction","pharmacy":"junction"}
+  function mIdx(loc){ return masterLine.indexOf(loc) }
+
+  function buildPath(from,to){
+    let fi=mIdx(from), ti=mIdx(to)
+    let path=[]
+    if(fi!==-1 && ti!==-1){
+      if(fi<ti) path=masterLine.slice(fi,ti+1)
+      else path=masterLine.slice(ti,fi+1).reverse()
+      return path
+    }
+    if(fi===-1 && branches[from]){
+      let fj=mIdx(branches[from])
+      path.push(from)
+      if(ti!==-1){
+        if(fj<=ti) path=path.concat(masterLine.slice(fj,ti+1))
+        else path=path.concat(masterLine.slice(ti,fj+1).reverse())
+      }else if(branches[to]){
+        let tj=mIdx(branches[to])
+        if(fj<=tj) path=path.concat(masterLine.slice(fj,tj+1))
+        else path=path.concat(masterLine.slice(tj,fj+1).reverse())
+        path.push(to)
+      }
+      return path
+    }
+    if(ti===-1 && branches[to]){
+      let tj=mIdx(branches[to])
+      if(fi<=tj) path=masterLine.slice(fi,tj+1)
+      else path=masterLine.slice(tj,fi+1).reverse()
+      path.push(to)
+      return path
+    }
+    return [from,to]
+  }
+
+  let builtRoute=buildPath(currentLocation,dest)
+  if(builtRoute.length<2){ speak("Cannot find a route to "+dest); return }
+  currentRoute=builtRoute
+  currentStep=1
+  document.getElementById("destination").style.display="none"
+  document.getElementById("navigation").style.display="block"
+  drawMap()
+  let nextStop=currentRoute[1]
+  let instruction=directions[currentLocation+"-"+nextStop]||("Proceed to "+nextStop)
+  document.getElementById("instruction").innerText=instruction
+  speak("New navigation. Going to "+dest+" from "+currentLocation+". "+instruction)
+}
+
+// ── MAP ──
+function drawMap(){
+  const c=document.getElementById("mapCanvas")
+  const cx=c.getContext("2d")
+  cx.clearRect(0,0,c.width,c.height)
+  cx.strokeStyle="#555"; cx.lineWidth=3
+  for(let i=0;i<currentRoute.length-1;i++){
+    let p1=locations[currentRoute[i]], p2=locations[currentRoute[i+1]]
+    if(!p1||!p2) continue
+    cx.beginPath(); cx.moveTo(p1.x,p1.y); cx.lineTo(p2.x,p2.y); cx.stroke()
+  }
+  cx.font="10px Arial"; cx.fillStyle="#888"
+  for(let cp of validCheckpoints){
+    let p=locations[cp]
+    if(p) cx.fillText(cp,p.x-15,p.y-10)
+  }
+  updateMap()
+}
+
+function updateMap(){
+  const c=document.getElementById("mapCanvas")
+  const cx=c.getContext("2d")
+  cx.fillStyle="#00e5ff"
+  for(let i=0;i<currentStep;i++){
+    let p=locations[currentRoute[i]]
+    if(!p) continue
+    cx.beginPath(); cx.arc(p.x,p.y,7,0,Math.PI*2); cx.fill()
+  }
+  if(currentStep>0 && currentStep<=currentRoute.length){
+    let cur=locations[currentRoute[Math.min(currentStep,currentRoute.length)-1]]
+    if(cur){ cx.fillStyle="#00ff44"; cx.beginPath(); cx.arc(cur.x,cur.y,9,0,Math.PI*2); cx.fill() }
+  }
+}
+
+// ── SCHEDULE ──
+function askSchedule(){
+  let now=new Date()
+  getScheduleAtTime(now.getHours(),now.getMinutes())
+}
+function getScheduleAtTime(h,m){
+  let next=schedule.find(function(item){
+    let p=item.time.split(":").map(Number)
+    return p[0]>h||(p[0]===h&&p[1]>=m)
+  })
+  if(!next) next=schedule[0]
+  document.getElementById("nextPlace").innerText="Next: "+next.place+" at "+next.time
+  speak("At "+next.time+", go to "+next.place)
+}
+
+// ── FALL DETECTION ──
+let lastAccel={x:0,y:0,z:0}, fallCooldown=false
+function startFallDetection(){
+  if(!window.DeviceMotionEvent) return
+  if(typeof DeviceMotionEvent.requestPermission==="function"){
+    DeviceMotionEvent.requestPermission().then(function(r){
+      if(r==="granted") listenMotion()
+    }).catch(function(){})
+  }else{
+    listenMotion()
+  }
+}
+function listenMotion(){
+  window.addEventListener("devicemotion",function(e){
+    let a=e.accelerationIncludingGravity
+    if(!a||a.x==null) return
+    let dx=a.x-lastAccel.x, dy=a.y-lastAccel.y, dz=a.z-lastAccel.z
+    let delta=Math.sqrt(dx*dx+dy*dy+dz*dz)
+    lastAccel={x:a.x,y:a.y,z:a.z}
+    if(delta>25&&!fallCooldown){
+      fallCooldown=true
+      onFallDetected()
+      setTimeout(function(){ fallCooldown=false },10000)
+    }
+  })
+}
+function onFallDetected(){
+  navigator.vibrate&&navigator.vibrate([400,100,400])
+  let banner=document.getElementById("fallAlert")
+  banner.style.display="block"
+  setTimeout(function(){ banner.style.display="none" },5000)
+  speak("Possible fall detected. A WhatsApp draft may open.")
+  sendWhatsApp("🚨 FALL DETECTED — NavAid user may need help! Last known location: "+lastKnownLocation+". Time: "+new Date().toLocaleTimeString())
+}
+
+// ── WHATSAPP SENDER ──
+function sendWhatsApp(message, extraLink, isCurrent = () => true){
+  let fullMsg=message
+  if(extraLink) fullMsg+="\n\nGuardian Live View: "+extraLink
+  function doSend(msg){
+    if(!isCurrent()) return
+    if(!GUARDIAN_NUMBER){
+      const statusEl = document.getElementById("voiceStatus")
+      if(statusEl) statusEl.innerText = "Configure a Guardian WhatsApp number first to open WhatsApp alert."
+      return
+    }
+    window.open("https://wa.me/"+GUARDIAN_NUMBER+"?text="+encodeURIComponent(msg),"_blank","noopener,noreferrer")
+  }
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      let lat=pos.coords.latitude.toFixed(5), lng=pos.coords.longitude.toFixed(5)
+      doSend(fullMsg+" GPS: https://maps.google.com/?q="+lat+","+lng)
+    },function(){ doSend(fullMsg) },{timeout:4000})
+  }else{
+    doSend(fullMsg)
+  }
+}
+
+// ── VOLUME BUTTON SOS ──
+let volumeHoldTimer=null, volumePressStart=null
+document.addEventListener("keydown",function(e){
+  if(e.key==="AudioVolumeUp"||e.key==="AudioVolumeDown"||e.keyCode===175||e.keyCode===174){
+    if(!volumePressStart){
+      volumePressStart=Date.now()
+      volumeHoldTimer=setTimeout(function(){ triggerSOS() },2000)
+    }
+    e.preventDefault()
+  }
+})
+document.addEventListener("keyup",function(e){
+  if(e.key==="AudioVolumeUp"||e.key==="AudioVolumeDown"||e.keyCode===175||e.keyCode===174){
+    clearTimeout(volumeHoldTimer); volumePressStart=null; e.preventDefault()
+  }
+})
+let touchSosTimer=null
+document.addEventListener("touchstart",function(e){
+  if(e.touches.length===3){ touchSosTimer=setTimeout(function(){ triggerSOS() },2000) }
+},{passive:true})
+document.addEventListener("touchend",function(){ clearTimeout(touchSosTimer) },{passive:true})
+
+// ── SOS TRIGGER ──
+function triggerSOS(){
+  if(sosActive) return
+  sosActive=true
+  sosAttempt++
+  navigator.vibrate&&navigator.vibrate([500,100,500,100,500])
+  document.getElementById("sosOverlay").style.display="flex"
+  document.getElementById("sosTime").innerText="Time: "+new Date().toLocaleTimeString()
+  document.getElementById("sosLocation").innerText="Last checkpoint: "+lastKnownLocation
+  document.getElementById("sosSessionInfo").innerText=""
+  document.getElementById("sosShareStatus").innerText="Choose how to share this alert. WhatsApp requires you to press Send."
+  speak("Emergency activated. Choose how to share the alert.")
+}
+
+function shareSOSMedia(){
+  if(!sosActive || guardianActive) return
+  const attempt=sosAttempt
+  document.getElementById("sosShareStatus").innerText="Opening the camera and connecting..."
+  startGuardian(function(watchLink){
+    if(!sosActive || attempt!==sosAttempt) return
+    document.getElementById("sosSessionInfo").innerText=watchLink ? "Guardian link: "+watchLink : ""
+    document.getElementById("sosShareStatus").innerText=watchLink
+      ? "Live link ready. Send it only to your intended guardian."
+      : "Live link unavailable. You can still prepare a WhatsApp draft."
+  })
+}
+
+function prepareSOSMessage(){
+  if(!sosActive) return
+  const attempt=sosAttempt
+  if(!GUARDIAN_NUMBER){
+    document.getElementById("sosShareStatus").innerText="Set a guardian number before opening a draft."
+    return
+  }
+  document.getElementById("sosShareStatus").innerText="WhatsApp needs your confirmation. Your browser may block opening the draft."
+  const message="SOS — NaviAid user needs help. Last checkpoint: "+lastKnownLocation+"\nTime: "+new Date().toLocaleTimeString()
+  sendWhatsApp(message, getWatchUrl(), () => sosActive && attempt===sosAttempt)
+}
+
+function sendSOS(){ triggerSOS() }
+
+function dismissSOS(){
+  sosActive=false
+  sosAttempt++
+  stopGuardian(false)
+  document.getElementById("sosSessionInfo").innerText=""
+  document.getElementById("sosOverlay").style.display="none"
+  navigator.vibrate&&navigator.vibrate(0)
+  speak("SOS cancelled.")
+}
+
+// ── GUARDIAN ASSIST with PeerJS session ──
+function startGuardian(onReady){
+  if(guardianActive){ if(onReady) onReady(getWatchUrl()); return }
+  guardianActive=true
+  const attempt=++guardianAttempt
+  document.getElementById("guardianPanel").style.display="block"
+  document.getElementById("guardianStatus").innerText="Starting camera and session..."
+
+  Promise.resolve().then(() => {
+    if(attempt!==guardianAttempt) return null
+    return navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:true})
+  })
+  .then(function(stream){
+    if(!stream) return
+    if(attempt!==guardianAttempt){ stream.getTracks().forEach(track => track.stop()); return }
+    guardianStream=stream
+    let gv=document.getElementById("guardianVideo")
+    gv.srcObject=stream
+    gv.muted=true
+
+    sessionId="navaid-"+Math.random().toString(36).substr(2,8)
+
+    peer=new Peer(sessionId)
+    peer.on("open",function(id){
+      if(attempt!==guardianAttempt) return
+      let watchUrl=getWatchUrl()
+      document.getElementById("sessionInfo").style.display="block"
+      document.getElementById("sessionLink").innerText=watchUrl
+      document.getElementById("guardianStatus").innerText="Camera live. Session active. Guardian can join using the link."
+      if(onReady) onReady(watchUrl)
+    })
+
+    peer.on("call",function(call){
+      if(attempt===guardianAttempt) call.answer(stream)
+    })
+
+    peer.on("error",function(err){
+      if(attempt!==guardianAttempt) return
+      stopGuardian(false)
+      if(onReady) onReady(null)
+    })
+  })
+  .catch(function(err){
+    if(attempt!==guardianAttempt) return
+    stopGuardian(false)
+    if(onReady) onReady(null)
+  })
+}
+
+function getWatchUrl(){
+  if(!sessionId) return null
+  let base=window.location.href.split("?")[0]
+  return base+"?watch="+sessionId
+}
+
+function stopGuardian(announce=true){
+  guardianAttempt++
+  if(guardianStream){ guardianStream.getTracks().forEach(function(t){ t.stop() }); guardianStream=null }
+  if(peer){ peer.destroy(); peer=null }
+  guardianActive=false; sessionId=null
+  document.getElementById("guardianPanel").style.display="none"
+  document.getElementById("guardianVideo").srcObject=null
+  document.getElementById("sessionInfo").style.display="none"
+  if(announce) speak("Guardian mode stopped.")
+}
+
+// ── GUARDIAN WATCH MODE ──
+function checkWatchMode(){
+  let params=new URLSearchParams(window.location.search)
+  let watchId=params.get("watch")
+  if(!watchId) return
+
+  // Build the guardian page — video element MUST exist in DOM before we assign srcObject
+  document.body.innerHTML=`
+    <div style="background:#000;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
+      <h2 style="color:#00e5ff;font-family:Arial;margin-bottom:16px;">👁 NavAid Guardian View</h2>
+      <video id="remoteVideo" autoplay playsinline muted style="width:100%;max-width:480px;border-radius:12px;background:#111;display:block;"></video>
+      <button id="unmuteBtn" style="display:none;margin-top:14px;padding:12px 24px;font-size:16px;background:#00e5ff;border:none;border-radius:8px;cursor:pointer;color:#000;font-family:Arial;">▶ Tap to hear audio</button>
+      <p id="watchStatus" style="color:#888;font-size:13px;font-family:Arial;margin-top:12px;">Connecting...</p>
+    </div>
+  `
+
+  function setStatus(msg){ document.getElementById("watchStatus").innerText=msg }
+
+  // Attach stream to video — works around Android timing bugs
+  function attachStream(remoteStream){
+    let rv=document.getElementById("remoteVideo")
+
+    // Set srcObject and attempt autoplay (muted so browser allows it)
+    rv.srcObject=remoteStream
+    rv.muted=true
+
+    rv.play().then(function(){
+      setStatus("✅ Live feed active")
+      // Show unmute button — Android blocks audio autoplay, needs user tap
+      let btn=document.getElementById("unmuteBtn")
+      btn.style.display="block"
+      btn.onclick=function(){
+        rv.muted=false
+        rv.play().catch(function(){})
+        btn.style.display="none"
+      }
+    }).catch(function(err){
+      setStatus("Tap the button below to start the feed")
+      // Autoplay fully blocked — show a tap-to-play button
+      let btn=document.getElementById("unmuteBtn")
+      btn.style.display="block"
+      btn.innerText="▶ Tap to start live feed"
+      btn.onclick=function(){
+        rv.muted=false
+        rv.srcObject=remoteStream
+        rv.play().catch(function(){})
+        btn.style.display="none"
+        setStatus("✅ Live feed active")
+      }
+    })
+  }
+
+  // Dummy canvas stream — required by PeerJS call() API (null causes silent failure)
+  let dummyCanvas=document.createElement("canvas")
+  dummyCanvas.width=1; dummyCanvas.height=1
+  let dummyStream=dummyCanvas.captureStream(1)
+
+  let remotePeer=new Peer()
+
+  remotePeer.on("open",function(){
+    setStatus("Connected. Calling user device...")
+    let call=remotePeer.call(watchId, dummyStream)
+
+    if(!call){
+      setStatus("Could not connect. Make sure SOS is active on the user's device.")
+      return
+    }
+
+    call.on("stream",function(remoteStream){
+      setStatus("Stream received. Starting video...")
+
+      // Wait for at least one track to become live before attaching
+      // (Android WebRTC delivers tracks in 'muted' state initially)
+      let tracks=remoteStream.getTracks()
+      let liveCount=0
+      let total=tracks.length||1
+
+      function tryAttach(){
+        liveCount++
+        if(liveCount>=total) attachStream(remoteStream)
+      }
+
+      if(tracks.length===0){
+        // No tracks yet — attach anyway and let browser handle it
+        attachStream(remoteStream)
+      } else {
+        tracks.forEach(function(track){
+          if(!track.muted){
+            tryAttach()
+          } else {
+            track.onunmute=function(){ tryAttach() }
+            // Fallback: don't wait forever — attach after 2s regardless
+            setTimeout(function(){ tryAttach() }, 2000)
+          }
+        })
+      }
+    })
+
+    call.on("error",function(e){ setStatus("Stream error: "+e.message) })
+    call.on("close",function(){ setStatus("Stream ended.") })
+  })
+
+  remotePeer.on("error",function(e){
+    setStatus("Connection failed: "+e.message+" — Make sure SOS is active on the user's device.")
+  })
+}
+
+checkWatchMode()
+
+</script>
+</body>
+</html>

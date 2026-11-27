@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 520" width="1100" height="520" style="background:#ffffff">
+
+  <defs>
+    <style>
+      .title { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .box-title-w { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .txt { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .txt-sm { font: 400 10.5px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+      .arrow-blue { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#ah-blue); }
+      .arrow-red { stroke: #dc2626; stroke-width: 1.8; fill: none; marker-end: url(#ah-red); }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1100" height="520" fill="#ffffff"/>
+  <rect x="0" y="0" width="1100" height="6" fill="url(#navGrad)"/>
+  <text x="32" y="38" class="title">Guardian Live Video &amp; Audio Streaming Architecture (PeerJS WebRTC P2P)</text>
+  <text x="32" y="56" class="subtitle">One-way live camera+microphone relay using dynamic PeerJS session IDs and Android WebRTC muted-track recovery</text>
+  <line x1="32" y1="68" x2="1068" y2="68" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="40" y="95" width="460" height="255" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 48 95 H 492 Q 500 95 500 103 V 123 H 40 V 103 Q 40 95 48 95 Z" fill="#0369a1"/>
+  <text x="52" y="114" class="box-title-w">User Device — Broadcaster (startGuardian)</text>
+  <text x="52" y="141" class="txt">1. getUserMedia({{video: {{facingMode: 'environment'}}, audio: true}})</text>
+  <text x="52" y="158" class="txt">2. Displays muted local preview in #guardianVideo</text>
+  <text x="52" y="175" class="txt">3. Generates sessionId = 'navaid-' + 8 random base36 chars</text>
+  <text x="52" y="192" class="txt">4. Registers peer = new Peer(sessionId) on PeerJS signaling</text>
+  <text x="52" y="209" class="txt">5. Builds link: origin/index.html?watch=navaid-xxxxxxxx</text>
+  <text x="52" y="226" class="txt">6. Embeds link in WhatsApp SOS draft &amp; #sessionInfo box</text>
+  <text x="52" y="243" class="txt">7. Listens peer.on('call', call =&gt; call.answer(stream))</text>
+  <text x="52" y="260" class="txt">8. User stops stream anytime via stopGuardian()</text>
+
+  <rect x="590" y="95" width="470" height="255" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <path d="M 598 95 H 1052 Q 1060 95 1060 103 V 123 H 590 V 103 Q 590 95 598 95 Z" fill="#047857"/>
+  <text x="602" y="114" class="box-title-w">Guardian Device — Viewer (checkWatchMode)</text>
+  <text x="602" y="141" class="txt">1. Opens ?watch=navaid-xxxxxxxx URL in mobile/desktop browser</text>
+  <text x="602" y="158" class="txt">2. Replaces page UI with #remoteVideo viewer &amp; unmute button</text>
+  <text x="602" y="175" class="txt">3. Creates 1x1 dummy canvas.captureStream(1) required by PeerJS</text>
+  <text x="602" y="192" class="txt">4. Calls remotePeer.call(watchId, dummyStream) via signaling</text>
+  <text x="602" y="209" class="txt">5. Waits for remoteStream track.onunmute (or 2,000 ms fallback)</text>
+  <text x="602" y="226" class="txt">6. Attaches muted stream to allow mobile autoplay -&gt; rv.play()</text>
+  <text x="602" y="243" class="txt">7. Reveals 'Tap to hear audio' button setting rv.muted = false</text>
+
+  <path d="M 500 175 L 590 175" class="arrow-blue"/>
+  <text x="506" y="165" class="txt-sm">?watch Link</text>
+  <path d="M 590 250 L 500 250" class="arrow"/>
+  <text x="508" y="240" class="txt-sm">PeerJS Call</text>
+  <path d="M 500 295 L 590 295" class="arrow-red"/>
+  <text x="506" y="285" class="txt-sm">WebRTC A/V</text>
+
+  <rect x="40" y="385" width="1020" height="105" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="1.5"/>
+  <path d="M 48 385 H 1052 Q 1060 385 1060 393 V 413 H 40 V 393 Q 40 385 48 385 Z" fill="#334155"/>
+  <text x="52" y="404" class="box-title-w">Security, Privacy &amp; Offline Notes</text>
+  <text x="52" y="431" class="txt">Privacy Caveat: Access relies on secrecy of the ~41-bit random ?watch= URL (no separate guardian login or token gate).</text>
+  <text x="52" y="448" class="txt">Offline Graceful Degradation: If PeerJS broker is unreachable, media sharing stops and a WhatsApp draft can still open without a watch link.</text>
+
+</svg>

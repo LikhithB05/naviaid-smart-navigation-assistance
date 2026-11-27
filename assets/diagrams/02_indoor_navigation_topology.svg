@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 560" width="1100" height="560" style="background:#ffffff">
+
+  <defs>
+    <style>
+      .title { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .box-title-w { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .txt { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .txt-sm { font: 400 10.5px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+      .arrow-blue { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#ah-blue); }
+      .arrow-red { stroke: #dc2626; stroke-width: 1.8; fill: none; marker-end: url(#ah-red); }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1100" height="560" fill="#ffffff"/>
+  <rect x="0" y="0" width="1100" height="6" fill="url(#navGrad)"/>
+  <text x="32" y="38" class="title">Spine-and-Branch Indoor Facility Graph &amp; Step-Count Navigation Model</text>
+  <text x="32" y="56" class="subtitle">6 mapped checkpoints, 300x240px Canvas coordinate space, and 17 directional step-count transitions in index.html</text>
+  <line x1="32" y1="68" x2="1068" y2="68" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="40" y="95" width="195" height="110" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 48 95 H 227 Q 235 95 235 103 V 123 H 40 V 103 Q 40 95 48 95 Z" fill="#0369a1"/>
+  <text x="52" y="114" class="box-title-w">Node 1: entrance</text>
+  <text x="52" y="141" class="txt">QR: 'Entrance'</text>
+  <text x="52" y="158" class="txt">Canvas: (25, 215)</text>
+  <text x="52" y="175" class="txt">Start / origin node</text>
+  <rect x="285" y="95" width="195" height="110" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 293 95 H 472 Q 480 95 480 103 V 123 H 285 V 103 Q 285 95 293 95 Z" fill="#0369a1"/>
+  <text x="297" y="114" class="box-title-w">Node 2: reception</text>
+  <text x="297" y="141" class="txt">QR: 'Reception'</text>
+  <text x="297" y="158" class="txt">Canvas: (80, 195)</text>
+  <text x="297" y="175" class="txt">Spine step #2</text>
+  <rect x="530" y="95" width="195" height="110" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+  <path d="M 538 95 H 717 Q 725 95 725 103 V 123 H 530 V 103 Q 530 95 538 95 Z" fill="#0369a1"/>
+  <text x="542" y="114" class="box-title-w">Node 3: corridor a</text>
+  <text x="542" y="141" class="txt">QR: 'Corridor A'</text>
+  <text x="542" y="158" class="txt">Canvas: (140, 155)</text>
+  <text x="542" y="175" class="txt">Spine step #3</text>
+  <rect x="775" y="95" width="195" height="110" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <path d="M 783 95 H 962 Q 970 95 970 103 V 123 H 775 V 103 Q 775 95 783 95 Z" fill="#047857"/>
+  <text x="787" y="114" class="box-title-w">Node 4: junction</text>
+  <text x="787" y="141" class="txt">QR: 'Junction'</text>
+  <text x="787" y="158" class="txt">Canvas: (200, 110)</text>
+  <text x="787" y="175" class="txt">Branch hub node</text>
+
+  <path d="M 235 150 L 285 150" class="arrow-blue"/>
+  <path d="M 480 150 L 530 150" class="arrow-blue"/>
+  <path d="M 725 150 L 775 150" class="arrow-blue"/>
+  <text x="242" y="140" class="txt-sm">10 steps</text>
+  <text x="487" y="140" class="txt-sm">6 steps</text>
+  <text x="732" y="140" class="txt-sm">8 steps</text>
+
+  <rect x="610" y="265" width="210" height="105" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <path d="M 618 265 H 812 Q 820 265 820 273 V 293 H 610 V 273 Q 610 265 618 265 Z" fill="#6d28d9"/>
+  <text x="622" y="284" class="box-title-w">Branch A: cardiology</text>
+  <text x="622" y="311" class="txt">QR: 'Cardiology'</text>
+  <text x="622" y="328" class="txt">Canvas: (275, 65)</text>
+  <text x="622" y="345" class="txt">Turn LEFT at junction (5 steps)</text>
+  <rect x="850" y="265" width="210" height="105" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <path d="M 858 265 H 1052 Q 1060 265 1060 273 V 293 H 850 V 273 Q 850 265 858 265 Z" fill="#c2410c"/>
+  <text x="862" y="284" class="box-title-w">Branch B: pharmacy</text>
+  <text x="862" y="311" class="txt">QR: 'Pharmacy'</text>
+  <text x="862" y="328" class="txt">Canvas: (275, 185)</text>
+  <text x="862" y="345" class="txt">Turn RIGHT at junction (5 steps)</text>
+
+  <path d="M 835 205 L 715 265" class="arrow"/>
+  <path d="M 910 205 L 955 265" class="arrow"/>
+
+  <rect x="40" y="400" width="1020" height="130" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <path d="M 48 400 H 1052 Q 1060 400 1060 408 V 428 H 40 V 408 Q 40 400 48 400 Z" fill="#1e293b"/>
+  <text x="52" y="419" class="box-title-w">Any-to-Any Routing Logic: buildPath(from, to) &amp; Bidirectional Pre-Authored Directions</text>
+  <text x="52" y="446" class="txt">Spine Structure: masterLine = ['entrance', 'reception', 'corridor a', 'junction'] | branches = {'cardiology': 'junction', 'pharmacy': 'junction'}</text>
+  <text x="52" y="463" class="txt">Path Builder: Slices and optionally reverses masterLine between spine indices, prepending/appending branch hubs in O(|V|) time (6 nodes).</text>
+  <text x="52" y="480" class="txt">Dynamic Recovery: Predefined 'directions' dictionary includes direct reverse routes AND multi-leg shortcuts (e.g., pharmacy-corridor a, pharmacy-entrance).</text>
+  <text x="52" y="497" class="txt">Honest Classification: Deterministic topology + step-snapping &amp; junction rerouting (not an arbitrary weighted A* or Dijkstra solver).</text>
+
+</svg>

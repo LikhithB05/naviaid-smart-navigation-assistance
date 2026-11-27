@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 590" width="1120" height="590" style="background:#ffffff">
+
+  <defs>
+    <style>
+      .title { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .box-title-w { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .txt { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .txt-sm { font: 400 10.5px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+      .arrow-blue { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#ah-blue); }
+      .arrow-red { stroke: #dc2626; stroke-width: 1.8; fill: none; marker-end: url(#ah-red); }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="590" fill="#ffffff"/>
+  <rect x="0" y="0" width="1120" height="6" fill="url(#navGrad)"/>
+  <text x="32" y="38" class="title">Emergency SOS, Fall Detection, GPS Snapshot &amp; WhatsApp Alert Workflow</text>
+  <text x="32" y="56" class="subtitle">Multi-trigger safety orchestration uniting hardware keys, touch gestures, voice SOS, and accelerometer delta detection</text>
+  <line x1="32" y1="68" x2="1088" y2="68" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="40" y="95" width="240" height="145" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <path d="M 48 95 H 272 Q 280 95 280 103 V 123 H 40 V 103 Q 40 95 48 95 Z" fill="#b91c1c"/>
+  <text x="52" y="114" class="box-title-w">Trigger 1: Voice SOS</text>
+  <text x="52" y="141" class="txt">Keywords in any recognition alt:</text>
+  <text x="52" y="158" class="txt">help, sos, emergency, elp,</text>
+  <text x="52" y="175" class="txt">assist, danger, urgent</text>
+  <text x="52" y="192" class="txt">-&gt; calls triggerSOS()</text>
+
+  <rect x="305" y="95" width="240" height="145" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <path d="M 313 95 H 537 Q 545 95 545 103 V 123 H 305 V 103 Q 305 95 313 95 Z" fill="#b91c1c"/>
+  <text x="317" y="114" class="box-title-w">Trigger 2: Hardware / Touch</text>
+  <text x="317" y="141" class="txt">AudioVolumeUp / Down 2s hold</text>
+  <text x="317" y="158" class="txt">(keyCode 175 / 174)</text>
+  <text x="317" y="175" class="txt">OR 3-finger touch hold (2,000 ms)</text>
+  <text x="317" y="192" class="txt">-&gt; calls triggerSOS()</text>
+
+  <rect x="570" y="95" width="510" height="145" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <path d="M 578 95 H 1072 Q 1080 95 1080 103 V 123 H 570 V 103 Q 570 95 578 95 Z" fill="#c2410c"/>
+  <text x="582" y="114" class="box-title-w">Trigger 3: Motion Fall Detection (listenMotion)</text>
+  <text x="582" y="141" class="txt">API: DeviceMotionEvent (iOS requestPermission supported)</text>
+  <text x="582" y="158" class="txt">Formula: delta = sqrt(dx^2 + dy^2 + dz^2) on accelerationIncludingGravity</text>
+  <text x="582" y="175" class="txt">Threshold: delta &gt; 25 m/s^2 triggers onFallDetected() (10,000 ms cooldown)</text>
+  <text x="582" y="192" class="txt">Action: Vibrate [400,100,400], banner 5s, speak alert, sendWhatsApp() (no PeerJS auto-stream)</text>
+
+  <path d="M 160 240 L 290 295" class="arrow-red"/>
+  <path d="M 425 240 L 340 295" class="arrow-red"/>
+  <path d="M 825 240 L 825 295" class="arrow"/>
+
+  <rect x="40" y="298" width="500" height="250" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <path d="M 48 298 H 532 Q 540 298 540 306 V 326 H 40 V 306 Q 40 298 48 298 Z" fill="#1e293b"/>
+  <text x="52" y="317" class="box-title-w">triggerSOS() Execution Sequence</text>
+  <text x="52" y="344" class="txt">1. Haptic pulse [500,100,500,100,500] &amp; red full-screen #sosOverlay</text>
+  <text x="52" y="361" class="txt">2. Speaks: 'Emergency activated. Alerting guardian. Stay calm.'</text>
+  <text x="52" y="378" class="txt">3. Start live media requests camera and mic with permission</text>
+  <text x="52" y="395" class="txt">4. Open WhatsApp draft attempts one GPS fix (4s timeout)</text>
+  <text x="52" y="412" class="txt">5. Press Send in WhatsApp to deliver the message</text>
+  <text x="52" y="429" class="txt">Cancel Flow: 'Cancel SOS' button stops vibration, media and the PeerJS session</text>
+  <text x="52" y="446" class="txt">   (Guardian media stops via explicit 'Stop Guardian Mode' button)</text>
+
+  <rect x="575" y="298" width="505" height="250" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <path d="M 583 298 H 1072 Q 1080 298 1080 306 V 326 H 575 V 306 Q 575 298 583 298 Z" fill="#047857"/>
+  <text x="587" y="317" class="box-title-w">sendWhatsApp() + Google Maps URL Builder</text>
+  <text x="587" y="344" class="txt">1. Calls navigator.geolocation.getCurrentPosition (4s timeout)</text>
+  <text x="587" y="361" class="txt">2. Formats: https://maps.google.com/?q=lat.toFixed(5),lng.toFixed(5)</text>
+  <text x="587" y="378" class="txt">   (Falls back cleanly to lastKnownLocation checkpoint if GPS denied)</text>
+  <text x="587" y="395" class="txt">3. Opens https://wa.me/&lt;configured_guardian_number&gt;?text=...</text>
+  <text x="587" y="412" class="txt">   via window.open(..., '_blank')</text>
+  <text x="587" y="429" class="txt">Operational Requirement: Prefills WhatsApp click-to-chat draft;</text>
+  <text x="587" y="446" class="txt">   user confirmation/tap Send inside WhatsApp delivers the message.</text>
+
+</svg>
